@@ -1,2 +1,2 @@
 
-from mtapi import *
+from .mtapi import *

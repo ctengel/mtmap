@@ -1,6 +1,6 @@
 
 
-import urllib
+from urllib.parse import urlencode
 import json
 
 class MassTimes:
@@ -10,9 +10,9 @@ class MassTimes:
         self.cache = cache
         self.maxage = maxage
     
-    def call(self,lat,lon,pg=1):
+    def call(self, lat, lon, pg=1):
         params = {'lat': lat, 'long': lon, 'pg': pg}
-        encoded = urllib.urlencode(params)
+        encoded = urlencode(params)
         data = self.cache.get_sync(self.url + '?' + encoded, self.maxage)
         return json.loads(data)
 
