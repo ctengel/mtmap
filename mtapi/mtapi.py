@@ -23,6 +23,7 @@ class MassTimes:
         if maxi is not None and maxi < mini:
             raise Exception
         while current_range <= mini:
+            #print(current_page,current_range)
             these_churches = self.call(lat, lon, current_page)
             for this_church in these_churches:
                 this_dist = float(this_church['distance'])
@@ -30,4 +31,5 @@ class MassTimes:
                     current_range = this_dist
                 if maxi is None or this_dist <= maxi:
                     all_churches.append(this_church)
+            current_page = current_page + 1
         return all_churches
