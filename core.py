@@ -4,6 +4,8 @@ import gmapi
 import cache
 import mtapi
 # TODO import DB
+import re
+import datetime
 
 class Location:
     def __init__(self, zipc=None, lat=None, lon=None, addr=None):
@@ -49,6 +51,20 @@ class Church(Location):
         if lat and lon:
             self.lat = lat
             self.lon = lon
+    def masses_in_range(self, timerange):
+        rtobj = []
+        # TODO consider end time in range also & more sophisticated
+        dow = timerange[0].strftime('%A')
+        start = timerange[0].time()
+        end = timerange[1].time()
+        for i in self.mtobj:
+            if i['day_of_week'] and re.match(dow, i['day_of_week']):
+                to = datetime.time(* [int(x) for x in i['time_start'].split(':')])
+                if start <= to and end >= to:
+                    rtobj.append((self, i))
+        return rtobj
+
+
 
 class Directions:
     def __init__(self, loc_array=None, dur_array=None, dist_array=None, polyline_arrays=None):
@@ -79,7 +95,7 @@ class MTMap:
         # Google Maps
         pass
 
-    def find_churches(self, loc_obj, exact=False):
+    def find_churches(self, loc_obj, exact=False, maxi=None):
         # add dist params
         # check db
         if not exact:
@@ -87,10 +103,18 @@ class MTMap:
         else:
             lookup_obj = loc_obj
         self.fwd_geocode(lookup_obj)
-        raw_churches = self.mtimes.get_radius(lookup_obj.lat, lookup_obj.lon)
+        raw_churches = self.mtimes.get_radius(lookup_obj.lat, lookup_obj.lon, maxi=maxi)
         # include dist somehow
         # Church obj should have a constructor strictly from MT Output :)
         return [Church(x['name'],x['church_address_postal_code'],x['latitude'],x['longitude'],{},x['church_worship_times'],x['diocese_name']) for x in raw_churches]
+
+    def mass_now(self, loc_obj, timespan, dist=None):
+        churches = self.find_churches(loc_obj, maxi=dist)
+        rtobj = []
+        for i in churches:
+            rtobj = rtobj + i.masses_in_range(timespan)
+        return rtobj
+
 
 
     def fwd_geocode(self, loc_obj):
