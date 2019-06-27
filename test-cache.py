@@ -1,7 +1,7 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
 import cache
 import cache.config as config
 
 mycache = cache.Cache(config.cacheuri)
-print mycache.get_sync(config.url)
+print(mycache.get_sync(config.url))
