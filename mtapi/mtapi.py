@@ -25,7 +25,7 @@ class MassTimes:
         while current_range <= mini:
             these_churches = self.call(lat, lon, current_page)
             for this_church in these_churches:
-                this_dist = this_church['distance']
+                this_dist = float(this_church['distance'])
                 if this_dist > current_range:
                     current_range = this_dist
                 if maxi is None or this_dist <= maxi:

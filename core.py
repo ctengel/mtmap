@@ -1,5 +1,6 @@
 
-import googlemaps
+#import googlemaps
+import gmapi
 import cache
 import mtapi
 # TODO import DB
@@ -13,15 +14,18 @@ class Location:
         if lat and lon:
             self.lat = lat
             self.lon = lon
+        else:
+            self.lat = None
+            self.lon = None
         self.zipc = zipc
         self.addr = addr
         if zipc is None and addr is None and (lat is None or lon is None):
             raise Exception
     def is_exact(self):
         return self.exact
-    def put_geocode(self, lat, lon):
+    def put_geocode(self, lat, lng):
         self.lat = lat
-        self.lon = lon
+        self.lon = lng
     def rev_geocode(self, addr, zipc):
         self.addr = addr
         self.zipc = zipc
@@ -63,41 +67,49 @@ class SingleDirections(Directions):
 class MTMap:
     def __init__(self, gmkey, cacheuri, mturl):
         # TODO add DB
-        self.gmaps = googlemaps.Client(key=gmkey)
+        # TODO use my gmapi???
+        #self.gmaps = googlemaps.Client(key=gmkey)
         mycache = cache.Cache(cacheuri)
         self.mtimes = mtapi.MassTimes(mturl, mycache)
+        self.gmaps = gmapi.GoogleMaps(mycache, gmkey)
         
     def find_route(self, dir_obj, exact=False):
         # check if already there
         # check if in db
         # Google Maps
+        pass
 
     def find_churches(self, loc_obj, exact=False):
         # add dist params
         # check db
-        if not exact and loc_obj.is_exact():
+        if not exact:
             lookup_obj = self.genericize(loc_obj)
         else:
             lookup_obj = loc_obj
-        if not lookup_obj.is_coded():
-            lookup_obj = self.fwd_geocode(lookup_obj)
+        self.fwd_geocode(lookup_obj)
         raw_churches = self.mtimes.get_radius(lookup_obj.lat, lookup_obj.lon)
         # include dist somehow
         # Church obj should have a constructor strictly from MT Output :)
-        #return [Church(x['name'],x['church_address_postal_code'],x['latitude'],x['longitude'],{},x['church_worship_times'],x['diocese_name'] for x in raw_churches]
+        return [Church(x['name'],x['church_address_postal_code'],x['latitude'],x['longitude'],{},x['church_worship_times'],x['diocese_name']) for x in raw_churches]
 
-        # MassTimes
 
     def fwd_geocode(self, loc_obj):
         if not loc_obj.is_coded():
-            # do stuff
-            pass
-        return (loc_obj.lat, loc_obj.lon)
+            loc_obj.put_geocode(**self.gmaps.geocode(loc_obj.zipc))
+        #return (loc_obj.lat, loc_obj.lon)
 
 
     def rev_geocode(self, loc_obj):
-        pass
+        if not loc_obj.zipc:
+            loc_obj.rev_geocode(None, self.gmaps.geouncode(loc_obj.lat, loc_obj.lon))
+
 
     def genericize(self, loc_obj):
         # get zip from geocode (if not already)
         # set lat and long to zip lat and long and clear out 
+        # TODO now
+        if not loc_obj.is_exact():
+            return loc_obj
+        self.rev_geocode(loc_obj)
+        new_loc = Location(loc_obj.zipc)
+        return new_loc
