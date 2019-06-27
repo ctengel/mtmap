@@ -38,7 +38,7 @@ class Location:
         
 
 class Church(Location):
-    def __init__(self, name, zipc=None, lat=None, lon=None, addr=None, mtobj=None, diocese=None):
+    def __init__(self, name, zipc=None, lat=None, lon=None, addr=None, mtobj=None, diocese=None, fullmto=None):
         # TODO better way to inherit loc constructor
         if ((lat is None or lon is None) and addr is None) or name is None:
             raise Exception
@@ -51,6 +51,9 @@ class Church(Location):
         if lat and lon:
             self.lat = lat
             self.lon = lon
+        self.fullmto = fullmto
+        if not addr and fullmto:
+            self.addr = "%s, %s, %s" % (fullmto['church_address_street_address'], fullmto['church_address_city_name'], fullmto['church_address_providence_name'])
     def masses_in_range(self, timerange, svctyp):
         rtobj = []
         # TODO consider end time in range also & more sophisticated
@@ -113,13 +116,14 @@ class MTMap:
         raw_churches = self.mtimes.get_radius(lookup_obj.lat, lookup_obj.lon, maxi=maxi, mini=mini)
         # include dist somehow
         # Church obj should have a constructor strictly from MT Output :)
-        return [Church(x['name'],x['church_address_postal_code'],x['latitude'],x['longitude'],{},x['church_worship_times'],x['diocese_name']) for x in raw_churches]
+        return [Church(x['name'],x['church_address_postal_code'],x['latitude'],x['longitude'],{},x['church_worship_times'],x['diocese_name'],x) for x in raw_churches]
 
     def mass_now(self, loc_obj, timespan, dist=None, svctyp=None):
         churches = self.find_churches(loc_obj, dist=dist)
         rtobj = []
         for i in churches:
             rtobj = rtobj + i.masses_in_range(timespan, svctyp)
+        rtobj.sort(key=lambda x: x[1]['time_start'])
         return rtobj
 
 
