@@ -1,5 +1,5 @@
 
-import urllib
+from urllib.parse import urlencode
 import json
 
 
@@ -12,13 +12,13 @@ class GoogleMaps:
 
     def call(self, endpoint, params):
         params['key'] = self.key
-        encoded = urllib.urlencode(params)
+        encoded = urlencode(params)
         data = self.cache.get_sync(self.url + endpoint + '/json?' + encoded)
         return json.loads(data)
 
     def geocode(self, address):
+        return self.call('geocode', {'address': address})['results'][0]['geometry']['location']
 
-    def geouncode(self, lat, lon):
-    
+    def geouncode(self, lat, lng):
+        return list(filter(lambda x: ('postal_code' in x['types']), self.call('geocode', {'latlng': ','.join([str(lat), str(lng)])})['results'][0]['address_components']))[0]['short_name']
 
-    
