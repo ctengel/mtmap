@@ -5,7 +5,7 @@ import json
 
 class MassTimes:
 
-    def __init__(self, url, cache, maxage=604800):
+    def __init__(self, url, cache, maxage=2419200):
         self.url = url
         self.cache = cache
         self.maxage = maxage

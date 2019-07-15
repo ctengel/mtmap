@@ -87,9 +87,9 @@ class SingleDirections(Directions):
 class MTMap:
     def __init__(self, gmkey, cacheuri, mturl):
         # TODO add DB
-        # TODO use my gmapi???
+        # TODO use googlemaps my gmapi???
         #self.gmaps = googlemaps.Client(key=gmkey)
-        mycache = cache.Cache(cacheuri)
+        mycache = cache.Cache(cacheuri, 15)
         self.mtimes = mtapi.MassTimes(mturl, mycache)
         self.gmaps = gmapi.GoogleMaps(mycache, gmkey)
         
