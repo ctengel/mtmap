@@ -22,3 +22,6 @@ class GoogleMaps:
     def geouncode(self, lat, lng):
         return list(filter(lambda x: ('postal_code' in x['types']), self.call('geocode', {'latlng': ','.join([str(lat), str(lng)])})['results'][0]['address_components']))[0]['short_name']
 
+    def timezone(self, lat, lng):
+        return self.call('timezone', {'location': ','.join([str(lat), str(lng)]), 'timestamp': 0})['timeZoneId']
+
