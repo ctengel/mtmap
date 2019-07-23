@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<ul>
+	{% for mass in masses %}
+	<li>
+		{{ mass['name'] }} {{ mass['addr'] }} {{ mass['zip'] }} {{ mass['time'] }} {{ mass['dist'] }}
+	</li>
+	{% endfor %}
+</ul>
+{% endblock %}

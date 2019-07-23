@@ -54,7 +54,9 @@ class Cache:
         if dbobj and (maxage is None or dbobj.cached > now - maxage):
             dbobj.hit = now
             session.commit()
-            return dbobj.data
+            data = dbobj.data
+            session.close()
+            return data
         else:
             now = self.rate_limit(now)
             data = requests.get(url).text
@@ -66,6 +68,7 @@ class Cache:
                 dbobj = CachedItem(url=url,data=data,cached=now,hit=now)
                 session.add(dbobj)
             session.commit()
+            session.close()
             return data
 
     def get_async(self, url, maxage=None, ican=False):
@@ -73,3 +76,6 @@ class Cache:
 
     def by_id(self, id):
         pass
+
+    def close(self):
+        self.engine.dispose()

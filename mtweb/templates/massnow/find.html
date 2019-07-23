@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<form method="get" action="{{ url_for('massnow.display') }}">
+	<p><input name="zip" id="zip" /><input type="submit" /></p>
+</form>
+{% endblock %}
