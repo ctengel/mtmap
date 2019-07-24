@@ -6,9 +6,11 @@ import mtapi
 # TODO import DB
 import re
 import datetime
+import pytz
 
 class Location:
     def __init__(self, zipc=None, lat=None, lon=None, addr=None):
+        # TODO generic location if not generic
         if (lat and lon) or addr:
             self.exact = True
         else:
@@ -23,6 +25,7 @@ class Location:
         self.addr = addr
         if zipc is None and addr is None and (lat is None or lon is None):
             raise Exception
+        self.tz = None
     def is_exact(self):
         return self.exact
     def put_geocode(self, lat, lng):
@@ -33,9 +36,28 @@ class Location:
         self.zipc = zipc
     def is_coded(self):
         return self.lat and self.lon
+    def put_tz(self, tz):
+        self.tz = tz
 
 
-        
+def day2date(day, today):
+    todayday = today.weekday()
+    DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    if day in DAYS:
+        targetday = DAYS.index(day)
+    elif day == 'Weekdays':
+        #if todayday < 5:
+        #    targetday = todayday
+        #else:
+        #    targetday = 0
+        # TODO it seems to be double, so...
+        return None
+    if targetday == todayday:
+        return today
+    if targetday > todayday:
+        return today + datetime.timedelta(days=(targetday-todayday))
+    if targetday < todayday:
+        return today + datetime.timedelta(days=(7-(todayday-targetday)))
 
 class Church(Location):
     def __init__(self, name, zipc=None, lat=None, lon=None, addr=None, mtobj=None, diocese=None, fullmto=None):
@@ -54,18 +76,25 @@ class Church(Location):
         self.fullmto = fullmto
         if not addr and fullmto:
             self.addr = "%s, %s, %s" % (fullmto['church_address_street_address'], fullmto['church_address_city_name'], fullmto['church_address_providence_name'])
+        self.tz = None
     def masses_in_range(self, timerange, svctyp):
         rtobj = []
         # TODO consider end time in range also & more sophisticated
         dow = timerange[0].strftime('%A')
-        start = timerange[0].time()
-        end = timerange[1].time()
+        start = timerange[0]#.time()
+        end = timerange[1]#.time()
         for i in self.mtobj:
-            if i['day_of_week'] and re.match(dow, i['day_of_week']):
-                to = datetime.time(* [int(x) for x in i['time_start'].split(':')])
-                if start <= to and end >= to:
-                    if not svctyp or svctyp == i['service_typename']:
-                        rtobj.append((self, i))
+            if not i['day_of_week']:
+                continue
+            myday = i['day_of_week'].strip()
+            mydo = day2date(myday, start.astimezone(self.tz).date())
+            if not mydo:
+                continue
+            oto = datetime.time(* [int(x) for x in i['time_start'].split(':')])
+            to = self.tz.localize(datetime.datetime.combine(mydo, oto))
+            if start <= to and end >= to:
+                if not svctyp or svctyp == i['service_typename']:
+                    rtobj.append((self, i))
         return rtobj
 
 
@@ -89,7 +118,7 @@ class MTMap:
         # TODO add DB
         # TODO use googlemaps my gmapi???
         #self.gmaps = googlemaps.Client(key=gmkey)
-        self.mycache = cache.Cache(cacheuri, 15)
+        self.mycache = cache.Cache(cacheuri, 5)
         self.mtimes = mtapi.MassTimes(mturl, self.mycache)
         self.gmaps = gmapi.GoogleMaps(self.mycache, gmkey)
         
@@ -116,12 +145,13 @@ class MTMap:
         raw_churches = self.mtimes.get_radius(lookup_obj.lat, lookup_obj.lon, maxi=maxi, mini=mini)
         # include dist somehow
         # Church obj should have a constructor strictly from MT Output :)
-        return [Church(x['name'],x['church_address_postal_code'],x['latitude'],x['longitude'],{},x['church_worship_times'],x['diocese_name'],x) for x in raw_churches]
+        return [Church(x['name'],x['church_address_postal_code'].partition('-')[0],x['latitude'],x['longitude'],{},x['church_worship_times'],x['diocese_name'],x) for x in raw_churches]
 
     def mass_now(self, loc_obj, timespan, dist=None, svctyp=None):
         churches = self.find_churches(loc_obj, dist=dist)
         rtobj = []
         for i in churches:
+            self.tag_tz(i)
             rtobj = rtobj + i.masses_in_range(timespan, svctyp)
         rtobj.sort(key=lambda x: x[1]['time_start'])
         return rtobj
@@ -148,6 +178,14 @@ class MTMap:
         self.rev_geocode(loc_obj)
         new_loc = Location(loc_obj.zipc)
         return new_loc
+
+    def tag_tz(self, loc_obj):
+        if not loc_obj.tz:
+            lookup_obj = self.genericize(loc_obj)
+            self.fwd_geocode(lookup_obj)
+            mytz = self.gmaps.timezone(lookup_obj.lat, lookup_obj.lon)
+            tzo = pytz.timezone(mytz)
+            loc_obj.put_tz(tzo)
 
     def close(self):
         self.mycache.close()

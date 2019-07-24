@@ -42,6 +42,7 @@ class Cache:
         return now
 
     def purge_old(self, maxage):
+        # TODO do we need to implement this or can we assume everything will refresh
         pass
 
     def purge_unused(self, maxsize):

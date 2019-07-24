@@ -4,12 +4,13 @@ import mt_map
 import sys
 import myconfig
 import datetime
+import pytz
 
 mycore = mt_map.MTMap(myconfig.key, myconfig.cacheuri, myconfig.url)
 myloc = mt_map.Location(sys.argv[1])
 #allchurches = mycore.find_churches(myloc)
 #for i in allchurches:
 #    print(i.name)
-allmasses = mycore.mass_now(myloc, (datetime.datetime.now()-datetime.timedelta(hours=1), datetime.datetime.combine(datetime.date.today(),datetime.time(23,59,59))), svctyp='Confessions', dist=30)
+allmasses = mycore.mass_now(myloc, (datetime.datetime.now(datetime.timezone.utc)-datetime.timedelta(hours=1), datetime.datetime.now(datetime.timezone.utc)+datetime.timedelta(hours=16)), svctyp='Confessions', dist=15)
 for i in allmasses:
     print(i[0].name, i[0].addr, i[0].zipc, i[1]['time_start'], i[0].fullmto['distance'])
