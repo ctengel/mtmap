@@ -14,7 +14,7 @@ class CachedItem(Base):
     # TODO add hitcounter
     __tablename__ = 'cache'
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    url = sqlalchemy.Column(sqlalchemy.String)
+    url = sqlalchemy.Column(sqlalchemy.String(255))
     cached = sqlalchemy.Column(sqlalchemy.Integer)
     data = sqlalchemy.Column(sqlalchemy.Text)
     hit = sqlalchemy.Column(sqlalchemy.Integer)
