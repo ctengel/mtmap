@@ -16,7 +16,7 @@ class CachedItem(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     url = sqlalchemy.Column(sqlalchemy.String(255))
     cached = sqlalchemy.Column(sqlalchemy.Integer)
-    data = sqlalchemy.Column(sqlalchemy.Text)
+    data = sqlalchemy.Column(sqlalchemy.Text(16777215))
     hit = sqlalchemy.Column(sqlalchemy.Integer)
     def __repr__(self):
         return "<CachedItem(url='%s')>" % (self.url)
