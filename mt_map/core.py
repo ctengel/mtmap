@@ -118,7 +118,7 @@ class MTMap:
         # TODO add DB
         # TODO use googlemaps my gmapi???
         #self.gmaps = googlemaps.Client(key=gmkey)
-        self.mycache = cache.Cache(cacheuri, 5)
+        self.mycache = cache.Cache(cacheuri, 1)
         self.mtimes = mtapi.MassTimes(mturl, self.mycache)
         self.gmaps = gmapi.GoogleMaps(self.mycache, gmkey)
         

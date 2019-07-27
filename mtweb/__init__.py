@@ -33,7 +33,7 @@ def create_app(test_config=None):
     mtc.init_app(app)
     
     from . import massnow
-    app.register_blueprint(massnow.bp)
-    app.add_url_rule('/', endpoint='find')
+    app.register_blueprint(massnow.bp, url_prefix=app.config['MTRT'])
+    #app.add_url_rule('/', endpoint='find')
 
     return app
