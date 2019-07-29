@@ -18,8 +18,13 @@ def find():
 @bp.route('/mtn')
 def display():
     zipcode = request.args.get('zip')
+    latlng = request.args.get('latlng')
     mtc = get_mtc()
-    myloc = Location(zipcode)
+    if latlng and zipcode == 'AUTO':
+        lat, lon = tuple(latlng.split(','))
+        myloc = Location(lat=lat, lon=lon)
+    else:
+        myloc = Location(zipcode)
     allmasses = mtc.mass_now(myloc, (datetime.datetime.now(datetime.timezone.utc)-datetime.timedelta(minutes=30), datetime.datetime.now(datetime.timezone.utc)+datetime.timedelta(hours=2)))
     masses = [{'name': i[0].name, 'addr': i[0].addr, 'zip': i[0].zipc, 'time': i[1]['time_start'], 'dist': i[0].fullmto['distance']} for i in allmasses]
     return render_template('massnow/display.html', masses=masses)

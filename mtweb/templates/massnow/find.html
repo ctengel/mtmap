@@ -1,7 +1,17 @@
 {% extends 'base.html' %}
 
 {% block content %}
+	<script>
+		if ("geolocation" in navigator) {
+			navigator.geolocation.getCurrentPosition(function(position) {
+				if (document.getElementById('zip').value == '') {
+					document.getElementById('latlng').value = ''.concat(position.coords.latitude, ',', position.coords.longitude);
+					document.getElementById('zip').value = 'AUTO';
+				}
+			});
+		}
+	</script>
 <form method="get" action="{{ url_for('massnow.display') }}">
-	<p><input name="zip" id="zip" /><input type="submit" /></p>
+	<p><input name="zip" id="zip" /><input type="submit" /><input type="hidden" name="latlng" id="latlng" value="" /></p>
 </form>
 {% endblock %}
