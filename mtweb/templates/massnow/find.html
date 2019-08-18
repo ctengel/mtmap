@@ -12,6 +12,12 @@
 		}
 	</script>
 <form method="get" action="{{ url_for('massnow.display') }}">
-	<p><input name="zip" id="zip" /><input type="submit" /><input type="hidden" name="latlng" id="latlng" value="" /></p>
+	<p><input name="zip" id="zip" /><input name="dist" id="dist" /><select name="svctyp" id="svctyp"><option value="Masses" selected="selected">Masses</option><option value="Confessions">Confessions</option></select></p>
+	<ul>
+		<li><input type="radio" name="timing" id="timingnow" checked="checked" value="now">Now</input></li>
+		<li><input type="radio" name="timing" id="timingrel" value="rel">Relative</input> <input name="relhours" id="relhours" /></li>
+		<li><input type="radio" name="timing" id="timingabs" value="abs">Absolute</input> <input name="absstr" id="absstr" /></li>
+	</ul>
+	<p><input type="submit" /><input type="hidden" name="latlng" id="latlng" value="" /></p>
 </form>
 {% endblock %}

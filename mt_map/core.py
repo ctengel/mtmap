@@ -46,11 +46,7 @@ def day2date(day, today):
     if day in DAYS:
         targetday = DAYS.index(day)
     elif day == 'Weekdays':
-        #if todayday < 5:
-        #    targetday = todayday
-        #else:
-        #    targetday = 0
-        # TODO it seems to be double, so...
+        # NOTE: This is for "holy days" it turns out... which is never safe to asusme what's on Masstimes ever
         return None
     if targetday == todayday:
         return today
